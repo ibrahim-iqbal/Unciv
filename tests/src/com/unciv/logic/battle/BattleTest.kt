@@ -382,6 +382,24 @@ class BattleTest(private val pathfindingAlgorithm: PathfindingAlgorithm) {
     }
 
     @Test
+    fun `barbarians may nuke civs they have no diplomacy with`() {
+        // given
+        val barbarians = testGame.addBarbarianCiv()
+        // A land unit, as in the issue's mod: air units need a city or carrier to stand on
+        val nukeUnit = testGame.createBaseUnit("Sword", "Nuclear weapon of Strength [1]").apply { range = 2 }
+        val nuke = testGame.addUnit(nukeUnit.name, barbarians, testGame.getTile(0,2))
+        val targetTile = defaultDefenderUnit.getTile()
+        targetTile.setExplored(barbarians, true)
+        assertTrue(barbarians.getDiplomacyManager(defenderCiv) == null)
+
+        // when
+        val mayUseNuke = Nuke.mayUseNuke(MapUnitCombatant(nuke), targetTile)
+
+        // then
+        assertTrue(mayUseNuke)
+    }
+
+    @Test
     fun `should give diplomacy penality for using a nuke`() {
         // given
         val thirdCiv = testGame.addCiv()
